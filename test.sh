@@ -1,3 +1,3 @@
-cd ./end-to-end-tests
+pushd end-to-end-tests
 mvn clean test
-cd -
+popd

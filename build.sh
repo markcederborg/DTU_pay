@@ -4,44 +4,44 @@ set -e
 # Build and install the libraries
 # abstracting away from using the
 # RabbitMq message queue
-cd ./messaging-utilities-3.4
+pushd messaging-utilities-3.4
 ./build.sh
-cd -
+popd
 
-cd ./dtupay
+pushd dtupay
 ./build.sh
-cd -
+popd
 
 
 # Build the services
-cd ./accountservice
+pushd accountservice
 ./build.sh
-cd -
+popd
 
-cd ./customerfacade
+pushd customerfacade
 ./build.sh
-cd -
+popd
 
-cd ./idgeneratorservice
+pushd idgeneratorservice
 ./build.sh
-cd -
+popd
 
-cd ./managerfacade
+pushd managerfacade
 ./build.sh
-cd -
+popd
 
-cd  ./merchantfacade
+pushd merchantfacade
 ./build.sh
-cd -
+popd
 
-cd ./paymentservice
+pushd paymentservice
 ./build.sh
-cd -
+popd
 
-cd ./reportservice
+pushd reportservice
 ./build.sh
-cd -
+popd
 
-cd ./tokenservice
+pushd tokenservice
 ./build.sh
-cd -
+popd
