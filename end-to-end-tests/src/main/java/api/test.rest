@@ -1,0 +1,17 @@
+### DEL account by id
+DELETE http://localhost:8082/merchant/deregister/123
+
+
+### POST pay
+POST http://localhost:8082/merchant/pay
+Content-Type: application/json
+
+{
+    "merchantId": "123",
+    "token": {
+        "value": "2d23b571-8cdb-4669-a2a6-3a841e3261f7"
+    },
+    "amount": 100
+}
+
+

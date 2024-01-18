@@ -1,0 +1,5 @@
+version: "3"
+services:
+  merchantfacade:
+    image: merchantfacade
+    build: .

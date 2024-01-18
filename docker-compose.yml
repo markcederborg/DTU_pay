@@ -1,0 +1,104 @@
+version: "3.7"
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq_container
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    restart: unless-stopped
+
+  customerfacade:
+    build:
+      context: customerfacade
+      dockerfile: Dockerfile
+    volumes:
+      - ./customerfacade/target:/usr/src
+    container_name: customerfacade
+    ports:
+      - "8080:8080"
+    depends_on:
+      - rabbitmq
+    restart: unless-stopped
+
+  merchantfacade:
+    build:
+      context: merchantfacade
+      dockerfile: Dockerfile
+    volumes:
+      - ./merchantfacade/target:/usr/src
+    container_name: merchantfacade
+    ports:
+      - "8082:8082"
+    depends_on:
+      - rabbitmq
+    restart: unless-stopped
+
+  managerfacade:
+    build:
+      context: managerfacade
+      dockerfile: Dockerfile
+    volumes:
+      - ./managerfacade/target:/usr/src
+    container_name: managerfacade
+    ports:
+      - "8084:8084"
+    depends_on:
+      - rabbitmq
+    restart: unless-stopped
+
+  accountservice:
+    build:
+      context: accountservice
+      dockerfile: Dockerfile
+    volumes:
+      - ./accountservice/target:/usr/src
+    container_name: accountservice
+    depends_on:
+      - rabbitmq
+    restart: unless-stopped
+
+  paymentservice:
+    build:
+      context: paymentservice
+      dockerfile: Dockerfile
+    volumes:
+      - ./paymentservice/target:/usr/src
+    container_name: paymentservice
+    depends_on:
+      - rabbitmq
+    restart: unless-stopped
+
+  tokenservice:
+    build:
+      context: tokenservice
+      dockerfile: Dockerfile
+    volumes:
+      - ./tokenservice/target:/usr/src
+    container_name: tokenservice
+    depends_on:
+      - rabbitmq
+    restart: unless-stopped
+
+  idgeneratorservice:
+    build:
+      context: idgeneratorservice
+      dockerfile: Dockerfile
+    volumes:
+      - ./idgeneratorservice/target:/usr/src
+    container_name: idgeneratorservice
+    depends_on:
+      - rabbitmq
+    restart: unless-stopped
+
+  reportservice:
+    build:
+      context: reportservice
+      dockerfile: Dockerfile
+    volumes:
+      - ./reportservice/target:/usr/src
+    container_name: reportservice
+    depends_on:
+      - rabbitmq
+    restart: unless-stopped
