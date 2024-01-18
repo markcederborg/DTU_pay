@@ -9,6 +9,7 @@ import java.io.Serializable;
 @Builder
 @Data
 @ToString
+@Author // s2200442
 public class Account implements Serializable {
     private String accountId;
     private String bankId;
