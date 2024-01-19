@@ -31,11 +31,13 @@ Pay for each customer plus the tokens used in these payments
 
 - Docker and docker-compose are required to run the project.
 - Maven is required to build the project.
-- Java 21 is required to run the project.
+- Java 11 is required to run the project.
 
-java 21.0.2 2024-01-16 LTS
-Java(TM) SE Runtime Environment (build 21.0.2+13-LTS-58)
-Java HotSpot(TM) 64-Bit Server VM (build 21.0.2+13-LTS-58, mixed mode, sharing)
+Apache Maven 3.9.6 (bc0240f3c744dd6b6ec2920b3cd08dcc295161ae)
+Maven home: /opt/homebrew/Cellar/maven/3.9.6/libexec
+Java version: 11.0.21, vendor: Eclipse Adoptium, runtime: /Library/Java/JavaVirtualMachines/temurin-11.jdk/Contents/Home
+Default locale: en_DK, platform encoding: UTF-8
+OS name: "mac os x", version: "14.2.1", arch: "aarch64", family: "mac
 
 ### Testing
 
