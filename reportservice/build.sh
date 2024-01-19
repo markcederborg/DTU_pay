@@ -1,4 +1,4 @@
 #!/bin/bash
 set -e
-mvn clean install package
+mvn clean install
 docker-compose build reportservice

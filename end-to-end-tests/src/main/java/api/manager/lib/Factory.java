@@ -12,7 +12,6 @@ public class Factory {
 		}
 
 		RestClient api = new RestClient("http://localhost:8084/manager");
-		//BankService bank = new BankServiceService().getBankServicePort();
 		app = new ManagerApp(api);
 
 		return app;

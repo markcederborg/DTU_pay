@@ -12,7 +12,6 @@ import java.math.BigDecimal;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-
 import dtupay.dto.CorrelationId;
 import dtupay.dto.Payment;
 
@@ -24,6 +23,7 @@ public class Service implements IService {
 
 	private Map<CorrelationId, CompletableFuture<String>> customerIds = new ConcurrentHashMap<>();
 	private Map<CorrelationId, CompletableFuture<String>> paymentIds = new ConcurrentHashMap<>();
+	private Map<CorrelationId, CompletableFuture<String>> customerBankIds = new ConcurrentHashMap<>();
 
 	public Service(MessageQueue q, IRepository repo) {
 		this.queue = q;
@@ -31,6 +31,8 @@ public class Service implements IService {
 		this.queue.addHandler("payment.requested", this::handlePaymentRequested);
 		this.queue.addHandler("token.id.succeeded", this::handleTokenIdSucceeded);
 		this.queue.addHandler("payment.id.succeeded", this::handlePaymentIdSucceeded);
+		this.queue.addHandler("customer.bank.succeeded", this::handleCustomerBankSucceeded);
+		this.queue.addHandler("customer.bank.failed", this::handleCustomerBankFailed);
 	}
 
 	public void handlePaymentRequested(Event ev) {
@@ -42,27 +44,36 @@ public class Service implements IService {
 			String token = payment.getToken();
 
 			if (token == null) {
+				System.out.println("Token is null");
 				throw new Exception("Token is null");
 			}
 			System.out.println("token id request");
-			customerIds.put(correlationId, new CompletableFuture<>());
-			Event ev2 = new Event("token.id.requested", new Object[] { correlationId, token });
+			var tokenCorrelation = CorrelationId.randomId();
+			customerIds.put(tokenCorrelation, new CompletableFuture<>());
+			Event ev2 = new Event("token.id.requested", new Object[] { tokenCorrelation, token });
 			queue.publish(ev2);
 			// wait for response
 
-			String customerId = customerIds.get(correlationId).get();
+			String customerId = customerIds.get(tokenCorrelation).get();
 			System.out.println("customerId: " + customerId);
 
-			paymentIds.put(correlationId, new CompletableFuture<>());
-
-			Event ev3 = new Event("payment.id.requested", new Object[] { correlationId, payment });
+			var payIdCorrelation = CorrelationId.randomId();
+			paymentIds.put(payIdCorrelation, new CompletableFuture<>());
+			Event ev3 = new Event("payment.id.requested", new Object[] { payIdCorrelation, payment });
 			queue.publish(ev3);
 			// wait for response
-			String paymentId = paymentIds.get(correlationId).get();
+			String paymentId = paymentIds.get(payIdCorrelation).get();
 			payment.setId(paymentId);
 
+			var bankCorrelation = CorrelationId.randomId();
+			customerBankIds.put(bankCorrelation, new CompletableFuture<>());
+			Event ev4 = new Event("customer.bank.requested", new Object[] { bankCorrelation, customerId });
+			queue.publish(ev4);
+
+			String customerBank = customerBankIds.get(bankCorrelation).get();
+
 			try {
-				bank.transferMoneyFromTo(customerId, payment.getMerchantId(), BigDecimal.valueOf(payment.getAmount()),
+				bank.transferMoneyFromTo(customerBank, payment.getMerchantId(), BigDecimal.valueOf(payment.getAmount()),
 						payment.getDescription());
 			} catch (BankServiceException_Exception e) {
 				throw new Exception("BankServiceException_Exception: " + e.getMessage());
@@ -93,4 +104,15 @@ public class Service implements IService {
 		paymentIds.get(correlationId).complete(paymentId);
 	}
 
+	public void handleCustomerBankSucceeded(Event ev) {
+		var correlationId = ev.getArgument(0, CorrelationId.class);
+		var id = ev.getArgument(1, String.class);
+		customerBankIds.get(correlationId).complete(id);
+	}
+
+	public void handleCustomerBankFailed(Event ev) {
+		var correlationId = ev.getArgument(0, CorrelationId.class);
+		var ex = ev.getArgument(1, Exception.class);
+		customerBankIds.get(correlationId).completeExceptionally(ex);
+	}
 }

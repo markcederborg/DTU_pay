@@ -24,6 +24,7 @@ public class Service implements IService {
 		this.queue.addHandler("customer.retirement.requested", this::handleCustomerRetirementRequested);
 		this.queue.addHandler("all.accounts.requested", this::handleAllAccountsRequested);
 		this.queue.addHandler("id.succeeded", this::handleIdSucceeded);
+		this.queue.addHandler("customer.bank.requested", this::handleCustomerBankRequested);
 
 	}
 
@@ -34,6 +35,19 @@ public class Service implements IService {
 			ev = new Event("accounts.succeeded", new Object[] { correlationId, accounts });
 		} catch (Exception e) {
 			ev = new Event("accounts.failed", new Object[] { correlationId, e });
+		}
+		queue.publish(ev);
+	}
+
+	public void handleCustomerBankRequested(Event ev) {
+		var correlationId = ev.getArgument(0, CorrelationId.class);
+		var id = ev.getArgument(1, String.class);
+		try {
+			var account = repository.getAccount(id);
+			String bankId = account.getBankId();
+			ev = new Event("customer.bank.succeeded", new Object[] { correlationId, bankId });
+		} catch (Exception e) {
+			ev = new Event("customer.bank.failed", new Object[] { correlationId, e });
 		}
 		queue.publish(ev);
 	}
@@ -101,4 +115,5 @@ public class Service implements IService {
 			System.out.println("No future found for correlation ID: " + correlationId);
 		}
 	}
+
 }

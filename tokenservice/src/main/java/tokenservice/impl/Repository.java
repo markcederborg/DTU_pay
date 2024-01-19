@@ -52,6 +52,8 @@ public class Repository implements IRepository {
         for (Map.Entry<String, Stack<String>> entry : tokens.entrySet()) {
             Stack<String> stack = entry.getValue();
             if (containsToken(stack, token)) {
+                System.out.println("token found: " + token);
+                System.out.println("customer id " + entry.getKey());
                 return entry.getKey();
             }
         }

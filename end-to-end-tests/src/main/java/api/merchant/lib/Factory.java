@@ -3,6 +3,8 @@ package api.merchant.lib;
 import api.RestClient;
 import api.merchant.impl.MerchantApp;
 import dtupay.dto.*;
+import fastmoney.BankService;
+import fastmoney.BankServiceService;
 
 public class Factory {
 	static MerchantApp app = null;
@@ -13,8 +15,8 @@ public class Factory {
 		}
 		Account account = new Account().builder().accountId(null).accountType(AccountType.MERCHANT).build();
 		RestClient api = new RestClient("http://localhost:8082/merchant");
-		//BankService bank = new BankServiceService().getBankServicePort();
-		app = new MerchantApp(account, api);
+		BankService bank = new BankServiceService().getBankServicePort();
+		app = new MerchantApp(account, api, bank);
 
 		return app;
 	}

@@ -44,8 +44,6 @@ public class Service implements IService {
 		System.out.println("handleTokenIdRequested");
 		var correlationId = ev.getArgument(0, CorrelationId.class);
 		String token = ev.getArgument(1, String.class);
-		System.out.println("token: " + token);
-
 		try {
 			String id = repository.getIdByToken(token);
 			ev = new Event("token.id.succeeded", new Object[] { correlationId, id });

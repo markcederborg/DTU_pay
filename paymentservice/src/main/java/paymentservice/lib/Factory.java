@@ -6,9 +6,7 @@ import messaging.implementations.RabbitMqQueue;
 
 public class Factory {
 
-
     static IService service = null;
-
 
     public synchronized IService getService() {
         // The singleton pattern.

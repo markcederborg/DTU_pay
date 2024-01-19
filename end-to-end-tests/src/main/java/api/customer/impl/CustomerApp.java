@@ -17,13 +17,13 @@ public class CustomerApp implements ICustomerApp {
     private Account account;
     private Stack<String> tokens;
     private RestClient api;
+    private BankService bank;
 
-    BankService bank = new BankServiceService().getBankServicePort();
-
-    public CustomerApp(Account account, Stack<String> tokens, RestClient api) {
+    public CustomerApp(Account account, Stack<String> tokens, RestClient api, BankService bank) {
         this.account = account;
         this.tokens = tokens;
         this.api = api;
+        this.bank = bank;
     }
 
     public void init(String firstName, String lastName, String identifier) {
@@ -71,7 +71,7 @@ public class CustomerApp implements ICustomerApp {
     }
 
     public void registerAccount() throws DTUpayRegistrationException {
-        System.out.println("Registering DTUpay account");
+        System.out.println("Registering DTUpay account for customer");
         try {
             String id = api.post("", account, String.class);
             System.out.println("DTUpay id: " + id);
@@ -111,7 +111,7 @@ public class CustomerApp implements ICustomerApp {
     public void requestTokens() throws TokenFetchException {
         System.out.println("Requesting tokens");
         try {
-            Stack<String> tks = (Stack<String>) api.get("/tokens/" + account.getBankId(), Stack.class);
+            Stack<String> tks = (Stack<String>) api.get("/tokens/" + account.getAccountId(), Stack.class);
             System.out.println("Received tokens: " + tks);
             tokens.addAll(tks);
             System.out.println("Tokens: " + tokens);

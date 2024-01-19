@@ -79,7 +79,6 @@ public class MyStepdefs {
     @When("the merchant initiates a payment for {int} kr by the customer for {string}")
     public void theMerchantInitiatesAPaymentForKrByTheCustomer(int cost, String description) throws Exception {
         String token = adapter.customerApp.spendToken();
-
         String merchantBank = adapter.merchantApp.getAccount().getBankId();
 
         if (merchantBank == null) {

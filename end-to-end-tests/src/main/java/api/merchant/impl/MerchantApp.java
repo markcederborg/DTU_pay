@@ -23,7 +23,7 @@ public class MerchantApp implements IMerchantApp {
     BankService bank = new BankServiceService().getBankServicePort();
 
     // Constructor
-    public MerchantApp(Account account, RestClient api) {
+    public MerchantApp(Account account, RestClient api, BankService bank) {
         this.account = account;
         this.api = api;
     }

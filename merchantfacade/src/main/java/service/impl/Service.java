@@ -24,7 +24,6 @@ public class Service implements IService {
 		queue.addHandler("payment.succeeded", this::handlePaymentSucceeded);
 		queue.addHandler("merchant.registration.failed", this::handleAccountRegistrationFailed);
 		queue.addHandler("merchant.retirement.failed", this::handleAccountDeregistrationFailed);
-
 	}
 
 	/*
