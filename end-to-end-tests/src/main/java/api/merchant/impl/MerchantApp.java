@@ -80,7 +80,7 @@ public class MerchantApp implements IMerchantApp {
     public void registerAccount() throws DTUpayRegistrationException {
         System.out.println("Registering DTUpay account");
         try {
-            String id = api.post("/register", account, String.class);
+            String id = api.post("", account, String.class);
             System.out.println("DTUpay id: " + id);
             account.setAccountId(id);
         } catch (Exception e) {
@@ -95,7 +95,7 @@ public class MerchantApp implements IMerchantApp {
         }
         String accountId = account.getAccountId();
         try {
-            api.delete("/retire/" + accountId);
+            api.delete("/" + accountId);
         } catch (Exception e) {
             throw new DTUpayRetirementException(e.getMessage());
         }
@@ -104,7 +104,7 @@ public class MerchantApp implements IMerchantApp {
     @Override
     public void initiatePayment(Payment payment) throws Exception {
         System.out.println("Initiating payment " + payment.toString());
-        String m = api.post("/pay", payment, String.class);
+        String m = api.post("/payment", payment, String.class);
         System.out.println("response: " + m);
     }
 

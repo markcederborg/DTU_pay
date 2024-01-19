@@ -33,6 +33,30 @@ public class Resource {
 
 	@GET
 	@Produces("application/json")
+	@Path("/payments/merchant/{id}")
+	public Response getMerchantPayments(@PathParam("id") String id) {
+		try {
+			List<Payment> report = service.getMerchantPayments(id).join();
+			return Response.ok(report).build();
+		} catch (Exception e) {
+			return Response.serverError().entity(e.getMessage()).build();
+		}
+	}
+
+	@GET
+	@Produces("application/json")
+	@Path("/payments/customer/{id}")
+	public Response getCustomerPayments(@PathParam("id") String id) {
+		try {
+			List<Payment> report = service.getCustomerPayments(id).join();
+			return Response.ok(report).build();
+		} catch (Exception e) {
+			return Response.serverError().entity(e.getMessage()).build();
+		}
+	}
+
+	@GET
+	@Produces("application/json")
 	@Path("/accounts")
 	public Response getAccounts() {
 		try {

@@ -16,4 +16,14 @@ public class Repository implements IRepository {
     public List<Payment> getTransactions() {
         return transactions;
     }
+
+    public List<Payment> getMerchantTransactions(String id) {
+        ArrayList<Payment> merchantTransactions = new ArrayList<Payment>();
+        for (Payment payment : transactions) {
+            if (payment.getMerchantId().equals(id)) {
+                merchantTransactions.add(payment);
+            }
+        }
+        return merchantTransactions;
+    }
 }

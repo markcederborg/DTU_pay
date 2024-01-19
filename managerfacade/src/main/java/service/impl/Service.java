@@ -20,11 +20,12 @@ public class Service implements IService {
 
 	public Service(MessageQueue q) {
 		queue = q;
-		queue.addHandler("all.accounts.succeeded", this::handleAccountsSucceeded);
-		queue.addHandler("all.accounts.failed", this::handleAccountsFailed);
+		queue.addHandler("accounts.succeeded", this::handleAccountsSucceeded);
+		queue.addHandler("accounts.failed", this::handleAccountsFailed);
 		queue.addHandler("accounts.delete.succeeded", this::handleAccountsDeleteSucceeded);
 		queue.addHandler("accounts.delete.failed", this::handleAccountsDeleteFailed);
 		queue.addHandler("payments.report.succeeded", this::handlePaymentsReportSucceeded);
+		queue.addHandler("payments.report.failed", this::handlePaymentsReportFailed);
 	}
 
 	/*
@@ -51,6 +52,22 @@ public class Service implements IService {
 		var correlationId = CorrelationId.randomId();
 		reports.put(correlationId, new CompletableFuture<>());
 		Event event = new Event("payments.report.requested", new Object[] { correlationId });
+		queue.publish(event);
+		return reports.get(correlationId);
+	}
+
+	public CompletableFuture<ArrayList<Payment>> getMerchantPayments(String id) {
+		var correlationId = CorrelationId.randomId();
+		reports.put(correlationId, new CompletableFuture<>());
+		Event event = new Event("payments.report.merchant.requested", new Object[] { correlationId });
+		queue.publish(event);
+		return reports.get(correlationId);
+	}
+
+	public CompletableFuture<ArrayList<Payment>> getCustomerPayments(String id) {
+		var correlationId = CorrelationId.randomId();
+		reports.put(correlationId, new CompletableFuture<>());
+		Event event = new Event("payments.report.customer.requested", new Object[] { correlationId });
 		queue.publish(event);
 		return reports.get(correlationId);
 	}
@@ -111,4 +128,13 @@ public class Service implements IService {
 		System.out.println("Received report: " + s);
 		reports.get(correlationid).complete(s);
 	}
+
+	private void handlePaymentsReportFailed(Event event) {
+		CorrelationId correlationId = event.getArgument(0, CorrelationId.class);
+		CompletableFuture<Boolean> future = deletes.get(correlationId);
+		String errorMessage = event.getArgument(1, String.class);
+		future.completeExceptionally(new Exception(errorMessage));
+
+	}
+
 }

@@ -31,9 +31,9 @@ public class Service implements IService {
 		var correlationId = ev.getArgument(0, CorrelationId.class);
 		try {
 			var accounts = repository.getAccounts();
-			ev = new Event("all.accounts.succeeded", new Object[] { correlationId, accounts });
+			ev = new Event("accounts.succeeded", new Object[] { correlationId, accounts });
 		} catch (Exception e) {
-			ev = new Event("all.accounts.failed", new Object[] { correlationId, e });
+			ev = new Event("accounts.failed", new Object[] { correlationId, e });
 		}
 		queue.publish(ev);
 	}

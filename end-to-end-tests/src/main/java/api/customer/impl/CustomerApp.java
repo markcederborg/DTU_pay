@@ -73,7 +73,7 @@ public class CustomerApp implements ICustomerApp {
     public void registerAccount() throws DTUpayRegistrationException {
         System.out.println("Registering DTUpay account");
         try {
-            String id = api.post("/register", account, String.class);
+            String id = api.post("", account, String.class);
             System.out.println("DTUpay id: " + id);
             account.setAccountId(id);
         } catch (Exception e) {
@@ -88,7 +88,7 @@ public class CustomerApp implements ICustomerApp {
         }
         String accountId = account.getAccountId();
         try {
-            api.delete("/retire/" + accountId);
+            api.delete("/" + accountId);
         } catch (Exception e) {
             throw new DTUpayRetirementException(e.getMessage());
         }
@@ -111,7 +111,7 @@ public class CustomerApp implements ICustomerApp {
     public void requestTokens() throws TokenFetchException {
         System.out.println("Requesting tokens");
         try {
-            Stack<String> tks = (Stack<String>) api.get("/get-tokens/" + account.getBankId(), Stack.class);
+            Stack<String> tks = (Stack<String>) api.get("/tokens/" + account.getBankId(), Stack.class);
             System.out.println("Received tokens: " + tks);
             tokens.addAll(tks);
             System.out.println("Tokens: " + tokens);

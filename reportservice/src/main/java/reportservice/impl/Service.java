@@ -16,9 +16,8 @@ public class Service implements IService {
 	public Service(MessageQueue q, IRepository repo) {
 		this.queue = q;
 		this.repository = repo;
-		this.queue.addHandler("customer.report.requested", this::handleCustomerReportRequested);
-		this.queue.addHandler("merchant.report.requested", this::handleMerchantReportRequested);
-		this.queue.addHandler("manager.report.requested", this::handleManagerReportRequested);
+		this.queue.addHandler("customer.report.customer.requested", this::handleCustomerReportRequested);
+		this.queue.addHandler("payments.report.merchant.requested", this::handleMerchantReportRequested);
 		this.queue.addHandler("payment.storage.requested", this::handlePaymentReceived);
 		this.queue.addHandler("payments.report.requested", this::handlePaymentsReportRequested);
 	}
@@ -38,7 +37,7 @@ public class Service implements IService {
 		queue.publish(ev);
 	}
 
-	private void handlePaymentsReportRequested(Event ev) {
+	public void handlePaymentsReportRequested(Event ev) {
 		var correlationId = ev.getArgument(0, CorrelationId.class);
 		try {
 			List<Payment> transactions = repository.getTransactions();
@@ -49,14 +48,16 @@ public class Service implements IService {
 		queue.publish(ev);
 	}
 
-	@Override
 	public void handleMerchantReportRequested(Event ev) {
-
-	}
-
-	@Override
-	public void handleManagerReportRequested(Event ev) {
-
+		var correlationId = ev.getArgument(0, CorrelationId.class);
+		var id = ev.getArgument(1, String.class);
+		try {
+			List<Payment> transactions = repository.getMerchantTransactions(id);
+			ev = new Event("payments.report.succeeded", new Object[] { correlationId, transactions });
+		} catch (Exception e) {
+			ev = new Event("payments.report.failed", new Object[] { correlationId, e });
+		}
+		queue.publish(ev);
 	}
 
 	@Override
