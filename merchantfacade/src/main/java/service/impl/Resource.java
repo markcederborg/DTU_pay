@@ -2,7 +2,6 @@ package service.impl;
 
 import dtupay.dto.*;
 import service.lib.Factory;
-
 import java.util.concurrent.ExecutionException;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
@@ -21,7 +20,6 @@ public class Resource {
 	@POST
 	@Consumes("application/json")
 	@Produces("application/json")
-	@Path("/register")
 	public Response register(Account account) {
 		try {
 			String id = service.registerAccount(account).join();
@@ -32,7 +30,7 @@ public class Resource {
 	}
 
 	@DELETE
-	@Path("/retire/{id}")
+	@Path("/{id}")
 	public Response deregister(@PathParam("id") String id) throws InterruptedException, ExecutionException {
 		try {
 			service.retireAccount(id).get();
@@ -46,7 +44,7 @@ public class Resource {
 	@POST
 	@Consumes("application/json")
 	@Produces("application/json")
-	@Path("/pay")
+	@Path("/payment")
 	public Response pay(Payment payment) {
 		try {
 			Boolean completed = service.pay(payment).join();

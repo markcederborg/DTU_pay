@@ -19,10 +19,12 @@ public class Service implements IService {
 
 	public Service(MessageQueue q) {
 		queue = q;
-
-		queue.addHandler("merchant.retirement.succeeded", this::handleRetirementSucceeded);
 		queue.addHandler("merchant.registration.succeeded", this::handleRegistrationSucceed);
+		queue.addHandler("merchant.retirement.succeeded", this::handleRetirementSucceeded);
 		queue.addHandler("payment.succeeded", this::handlePaymentSucceeded);
+		queue.addHandler("merchant.registration.failed", this::handleAccountRegistrationFailed);
+		queue.addHandler("merchant.retirement.failed", this::handleAccountDeregistrationFailed);
+
 	}
 
 	/*
@@ -48,57 +50,46 @@ public class Service implements IService {
 	public CompletableFuture<Boolean> retireAccount(String id) {
 		var correlationId = CorrelationId.randomId();
 		retirements.put(correlationId, new CompletableFuture<>());
-		Event event = new Event("retirement.requested", new Object[] { correlationId, id, });
+		Event event = new Event("merchant.retirement.requested", new Object[] { correlationId, id });
 		queue.publish(event);
 		return retirements.get(correlationId);
 	}
 
 	public CompletableFuture<Boolean> pay(Payment payment) {
 		var correlationId = CorrelationId.randomId();
-		payments.put(correlationId, new CompletableFuture<>()); // Ensure this is the same map used in the handlePaymentSucceeded method
+		payments.put(correlationId, new CompletableFuture<>());
 		Event event = new Event("payment.requested", new Object[] { correlationId, payment });
 		queue.publish(event);
-		return payments.get(correlationId); // This will return immediately, but the CompletableFuture will be completed later
+		return payments.get(correlationId);
 	}
-
 
 	/*
 	 * Listeners:
 	 */
-
 	private void handleRetirementSucceeded(Event e) {
 		var future = retirements.get(e.getArgument(0, CorrelationId.class));
-		if (future != null) {
-			try {
-				future.complete(true);
-			} catch (ClassCastException ex) {
-				future.completeExceptionally(new Exception("Retirement failed..."));
-			}
-		}
+		future.complete(true);
 	}
 
 	private void handlePaymentSucceeded(Event e) {
-		System.out.println("Payment succeeded");
-		var correlationId = e.getArgument(0, CorrelationId.class);
-		CompletableFuture<Boolean> future = payments.get(correlationId);
-		if (future != null) {
-			future.complete(true);
-		} else {
-			System.err.println("No CompletableFuture found for correlation ID: " + correlationId);
-		}
+		var future = payments.get(e.getArgument(0, CorrelationId.class));
+		future.complete(true);
 	}
-
 
 	private void handleRegistrationSucceed(Event e) {
 		var future = registrations.get(e.getArgument(0, CorrelationId.class));
-		if (future != null) {
-			try {
-				String id = e.getArgument(1, String.class);
-				System.out.println("Received ID: " + id);
-				future.complete(id);
-			} catch (ClassCastException ex) {
-				future.completeExceptionally(new Exception("Invalid account data received."));
-			}
-		}
+		future.complete(e.getArgument(1, String.class));
+	}
+
+	private void handleAccountDeregistrationFailed(Event e) {
+		var future = retirements.get(e.getArgument(0, CorrelationId.class));
+		var s = e.getArgument(1, Exception.class);
+		future.completeExceptionally(s);
+	}
+
+	private void handleAccountRegistrationFailed(Event e) {
+		var future = registrations.get(e.getArgument(0, CorrelationId.class));
+		var s = e.getArgument(1, Exception.class);
+		future.completeExceptionally(s);
 	}
 }

@@ -8,6 +8,4 @@ public interface IService {
 
     public CompletableFuture<Boolean> retireAccount(String id) throws Exception;
 
-
-
 }

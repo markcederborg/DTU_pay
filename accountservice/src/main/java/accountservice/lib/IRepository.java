@@ -1,10 +1,8 @@
 package accountservice.lib;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import accountservice.dto.Account;
+import dtupay.dto.*;
 
 import javax.security.auth.login.AccountNotFoundException;
 import javax.ws.rs.NotFoundException;

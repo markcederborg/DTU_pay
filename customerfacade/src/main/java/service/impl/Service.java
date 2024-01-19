@@ -1,4 +1,4 @@
-package dtupay.service.impl;
+package service.impl;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -6,7 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import messaging.Event;
 import messaging.MessageQueue;
-import dtupay.service.lib.IService;
+import service.lib.IService;
 import dtupay.dto.*;
 import java.util.Stack;
 
@@ -40,7 +40,7 @@ public class Service implements IService {
 	public CompletableFuture<Boolean> retireAccount(String id) {
 		var correlationId = CorrelationId.randomId();
 		retirements.put(correlationId, new CompletableFuture<>());
-		Event event = new Event("retirement.requested", new Object[] { correlationId, id, });
+		Event event = new Event("customer.retirement.requested", new Object[] { correlationId, id, });
 		queue.publish(event);
 		return retirements.get(correlationId);
 	}
@@ -59,19 +59,12 @@ public class Service implements IService {
 
 	private void handleAccountRegistrationSucceeded(Event e) {
 		var future = registrations.get(e.getArgument(0, CorrelationId.class));
-		if (future == null) {
-			return;
-		}
 		var s = e.getArgument(1, String.class);
 		future.complete(s);
 	}
 
 	private void handleAccountRegistrationFailed(Event e) {
-		;
 		var future = registrations.get(e.getArgument(0, CorrelationId.class));
-		if (future == null) {
-			return;
-		}
 		var s = e.getArgument(1, Exception.class);
 		future.completeExceptionally(s);
 	}
@@ -79,33 +72,24 @@ public class Service implements IService {
 	private void handleAccountDeregistrationSucceeded(Event e) {
 		var correlationId = e.getArgument(0, CorrelationId.class);
 		var future = retirements.get(correlationId);
-		if (future == null) {
-			return;
-		}
 		future.complete(true);
 	}
 
 	private void handleAccountDeregistrationFailed(Event e) {
 		var future = retirements.get(e.getArgument(0, CorrelationId.class));
-		if (future == null) {
-			return;
-		}
 		var s = e.getArgument(1, Exception.class);
 		future.completeExceptionally(s);
 	}
 
 	private void handleTokensRequestSucceeded(Event e) {
-		System.out.println("handleTokensRequestSucceeded");
-		var correlationid = e.getArgument(0, CorrelationId.class);
-		var future = tokens.get(correlationid);
+		var future = tokens.get(e.getArgument(0, CorrelationId.class));
 		Stack<String> ts = (Stack<String>) e.getArgument(1, Stack.class);
-		System.out.println("ts: " + ts);
 		future.complete(ts);
 	}
 
 	private void handleTokensRequestFailed(Event e) {
+		var future = tokens.get(e.getArgument(0, CorrelationId.class));
 		var s = e.getArgument(1, Exception.class);
-		var correlationid = e.getArgument(0, CorrelationId.class);
-		tokens.get(correlationid).completeExceptionally(s);
+		future.completeExceptionally(s);
 	}
 }

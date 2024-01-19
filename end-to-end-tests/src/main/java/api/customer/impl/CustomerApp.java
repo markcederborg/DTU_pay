@@ -12,8 +12,6 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.util.Stack;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 @Data
 public class CustomerApp implements ICustomerApp {
     private Account account;
@@ -46,6 +44,7 @@ public class CustomerApp implements ICustomerApp {
         user.setCprNumber(account.getIdentifier());
         try {
             String bankId = bank.createAccountWithBalance(user, BigDecimal.valueOf(balance));
+            System.out.println("Registered bank account with id: " + bankId);
             account.setBankId(bankId);
         } catch (BankServiceException_Exception e) {
             throw new BankRegistrationException(e.getMessage());
@@ -53,7 +52,7 @@ public class CustomerApp implements ICustomerApp {
     }
 
     public void retireBank() throws BankRetirementException {
-        System.out.println("Retiring bank account");
+        System.out.println("Retiring bank account with id: " + account.getBankId());
         try {
             bank.retireAccount(account.getBankId());
         } catch (BankServiceException_Exception e) {
@@ -66,6 +65,7 @@ public class CustomerApp implements ICustomerApp {
         try {
             return bank.getAccount(account.getBankId());
         } catch (BankServiceException_Exception e) {
+            System.out.println("Error occurred during bank account retirement: " + e);
             throw new BankGetAccountException(e.getMessage());
         }
     }
@@ -73,7 +73,7 @@ public class CustomerApp implements ICustomerApp {
     public void registerAccount() throws DTUpayRegistrationException {
         System.out.println("Registering DTUpay account");
         try {
-            String id = api.post("/register", account, String.class);
+            String id = api.post("", account, String.class);
             System.out.println("DTUpay id: " + id);
             account.setAccountId(id);
         } catch (Exception e) {
@@ -88,7 +88,7 @@ public class CustomerApp implements ICustomerApp {
         }
         String accountId = account.getAccountId();
         try {
-            api.delete("/retire/" + accountId);
+            api.delete("/" + accountId);
         } catch (Exception e) {
             throw new DTUpayRetirementException(e.getMessage());
         }
@@ -111,7 +111,7 @@ public class CustomerApp implements ICustomerApp {
     public void requestTokens() throws TokenFetchException {
         System.out.println("Requesting tokens");
         try {
-            Stack<String> tks = (Stack<String>) api.get("/get-tokens/" + account.getBankId(), Stack.class);
+            Stack<String> tks = (Stack<String>) api.get("/tokens/" + account.getBankId(), Stack.class);
             System.out.println("Received tokens: " + tks);
             tokens.addAll(tks);
             System.out.println("Tokens: " + tokens);

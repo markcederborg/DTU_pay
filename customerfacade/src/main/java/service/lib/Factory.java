@@ -1,7 +1,7 @@
-package dtupay.service.lib;
+package service.lib;
 
-import dtupay.service.impl.Service;
 import messaging.implementations.RabbitMqQueue;
+import service.impl.Service;
 
 
 public class Factory {

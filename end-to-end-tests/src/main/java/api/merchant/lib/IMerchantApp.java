@@ -1,13 +1,15 @@
 package api.merchant.lib;
 
 import dtupay.dto.*;
+import exceptions.BankGetAccountException;
+import exceptions.BankRetirementException;
 
 public interface IMerchantApp {
     void init(String firstName, String lastName, String identifier);
 
-    void retireBank();
+    void retireBank() throws BankGetAccountException, BankRetirementException;
 
-    fastmoney.Account getBankAccount();
+    fastmoney.Account getBankAccount() throws BankGetAccountException;
 
     void registerAccount() throws Exception;
 
