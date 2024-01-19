@@ -101,7 +101,6 @@
 			<artifactId>dtupay</artifactId>
 			<version>5</version>
 		</dependency>
-
     </dependencies>
 	<build>
 		<plugins>

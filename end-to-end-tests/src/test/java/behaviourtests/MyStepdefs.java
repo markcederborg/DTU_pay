@@ -4,15 +4,14 @@ import dtupay.dto.*;
 import exceptions.BankGetAccountException;
 import exceptions.BankRegistrationException;
 import exceptions.ReportFetchingException;
-
+import io.cucumber.java.AfterAll;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 
 import org.junit.Assert;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+
 import utils.Adapter;
 import utils.Factory;
 
@@ -24,33 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class MyStepdefs {
     static Adapter adapter = new Factory().getAdapter();
-    ArrayList report = new ArrayList<Payment>();
-
-    @BeforeAll
-    public static void tearUp() throws Exception {
-        try {
-            adapter.customerApp.retireAccount();
-        } catch (Exception e) {
-            System.out.println("Customer not registered");
-        }
-        try {
-            adapter.merchantApp.retireAccount();
-        } catch (Exception e) {
-            System.out.println("Merchant not registered");
-        }
-
-        try {
-            adapter.customerApp.retireBank();
-        } catch (Exception e) {
-            System.out.println("Customer bank not registered");
-        }
-
-        try {
-            adapter.merchantApp.retireBank();
-        } catch (Exception e) {
-            System.out.println("Merchant bank not registered");
-        }
-    }
+    ArrayList<Payment> report = new ArrayList<Payment>();
 
     @Given("a customer with name {string} {string} and cpr {string}")
     public void aCustomerWithNameAndCpr(String arg0, String arg1, String arg2) {
@@ -134,10 +107,9 @@ public class MyStepdefs {
     }
 
     @And("the balance of the merchant at the bank is {int} kr")
-    public void theBalanceOfTheMerchantAtTheBankIsKr(int arg0) {
+    public void theBalanceOfTheMerchantAtTheBankIsKr(int arg0) throws BankGetAccountException {
         BigDecimal expected = BigDecimal.valueOf(arg0);
         BigDecimal balance = adapter.merchantApp.getBankAccount().getBalance();
-
         Assert.assertEquals(expected, balance);
     }
 
@@ -185,17 +157,7 @@ public class MyStepdefs {
 
     @AfterAll
     public static void tearDown() throws Exception {
-        try {
-            adapter.customerApp.retireAccount();
-        } catch (Exception e) {
-            System.out.println("Customer not registered");
-        }
-        try {
-            adapter.merchantApp.retireAccount();
-        } catch (Exception e) {
-            System.out.println("Merchant not registered");
-        }
-
+        System.out.println("[TEARING DOWN]");
         try {
             adapter.customerApp.retireBank();
         } catch (Exception e) {
@@ -206,6 +168,17 @@ public class MyStepdefs {
             adapter.merchantApp.retireBank();
         } catch (Exception e) {
             System.out.println("Merchant bank not registered");
+        }
+
+        try {
+            adapter.customerApp.retireAccount();
+        } catch (Exception e) {
+            System.out.println("Customer not registered with DTUpay");
+        }
+        try {
+            adapter.merchantApp.retireAccount();
+        } catch (Exception e) {
+            System.out.println("Merchant not registered with DTUpay");
         }
     }
 }

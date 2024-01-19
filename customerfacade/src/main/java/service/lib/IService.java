@@ -1,4 +1,4 @@
-package dtupay.service.lib;
+package service.lib;
 
 import java.util.concurrent.CompletableFuture;
 import dtupay.dto.Account;

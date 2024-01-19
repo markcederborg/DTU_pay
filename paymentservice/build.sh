@@ -1,4 +1,4 @@
 #!/bin/bash
 set -e
-mvn clean package
+mvn clean install package
 docker-compose build paymentservice

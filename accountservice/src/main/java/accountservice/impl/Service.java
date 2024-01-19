@@ -1,13 +1,10 @@
 package accountservice.impl;
 
-import accountservice.dto.Account;
-import accountservice.dto.AccountType;
-import accountservice.dto.CorrelationId;
+import dtupay.dto.*;
 import accountservice.lib.IRepository;
 import accountservice.lib.IService;
 import messaging.Event;
 import messaging.MessageQueue;
-
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -23,9 +20,11 @@ public class Service implements IService {
 		this.queue = q;
 		this.repository = repo;
 		this.queue.addHandler("registration.requested", this::handleRegistrationRequested);
-		this.queue.addHandler("retirement.requested", this::handleRetirementRequested);
+		this.queue.addHandler("merchant.retirement.requested", this::handleMerchantRetirementRequested);
+		this.queue.addHandler("customer.retirement.requested", this::handleCustomerRetirementRequested);
 		this.queue.addHandler("all.accounts.requested", this::handleAllAccountsRequested);
 		this.queue.addHandler("id.succeeded", this::handleIdSucceeded);
+
 	}
 
 	public void handleAllAccountsRequested(Event ev) {
@@ -39,18 +38,10 @@ public class Service implements IService {
 		queue.publish(ev);
 	}
 
-	private void handleRegistrationRequested(Event ev) {
+	public void handleRegistrationRequested(Event ev) {
 		System.out.println("Received registration request");
 		Account account = ev.getArgument(1, Account.class);
-		String dest;
-		if (account.getAccountType() == AccountType.MERCHANT) {
-			dest = "merchant";
-		} else {
-			dest = "customer";
-		}
-
-		System.out.println("Destination: " + dest);
-
+		String dest = (account.getAccountType() == AccountType.MERCHANT) ? "merchant" : "customer";
 		var correlationId = ev.getArgument(0, CorrelationId.class);
 		try {
 			System.out.println("Received registration request for: " + account);
@@ -65,17 +56,17 @@ public class Service implements IService {
 
 			// Add the account to the repository
 			repository.addAccount(account);
-			ev = new Event(dest+".registration.succeeded", new Object[] { correlationId, generatedId });
+
+			ev = new Event(dest + ".registration.succeeded", new Object[] { correlationId, generatedId });
 		} catch (Exception e) {
-			ev = new Event(dest+".registration.failed", new Object[] { correlationId, e });
+			ev = new Event(dest + ".registration.failed", new Object[] { correlationId, e });
 		}
 		queue.publish(ev);
 	}
 
-	public void handleRetirementRequested(Event ev) {
-		var id = ev.getArgument(1, String.class);
+	public void handleCustomerRetirementRequested(Event ev) {
 		var correlationId = ev.getArgument(0, CorrelationId.class);
-
+		var id = ev.getArgument(1, String.class);
 		try {
 			repository.removeAccount(id);
 			ev = new Event("customer.retirement.succeeded", new Object[] {
@@ -83,10 +74,21 @@ public class Service implements IService {
 		} catch (Exception e) {
 			ev = new Event("customer.retirement.failed", new Object[] { correlationId, e });
 		}
-
 		queue.publish(ev);
 	}
 
+	public void handleMerchantRetirementRequested(Event ev) {
+		var correlationId = ev.getArgument(0, CorrelationId.class);
+		var id = ev.getArgument(1, String.class);
+		try {
+			repository.removeAccount(id);
+			ev = new Event("merchant.retirement.succeeded", new Object[] {
+					correlationId, id });
+		} catch (Exception e) {
+			ev = new Event("merchant.retirement.failed", new Object[] { correlationId, e });
+		}
+		queue.publish(ev);
+	}
 
 	private void handleIdSucceeded(Event ev) {
 		System.out.println("Received id response");

@@ -1,6 +1,6 @@
 package accountservice.impl;
 
-import accountservice.dto.Account;
+import dtupay.dto.*;
 import accountservice.lib.IRepository;
 import lombok.Getter;
 import lombok.Setter;
